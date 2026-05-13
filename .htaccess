@@ -1,0 +1,179 @@
+# Apache Server Configuration for qiantiannet.com
+# Enhanced SEO and Security
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Force HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  
+  # Remove www prefix (optional - adjust based on preference)
+  # RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+  # RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+  
+  # Add www prefix (uncomment if preferred)
+  # RewriteCond %{HTTP_HOST} !^www\. [NC]
+  # RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+  
+  # Remove .html extension (optional)
+  # RewriteCond %{REQUEST_FILENAME} !-f
+  # RewriteCond %{REQUEST_FILENAME} !-d
+  # RewriteRule ^([^\.]+)$ $1.html [NC, L]
+  
+  # Trailing slash redirect
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+[^/])$ $1/ [R=301,L]
+</IfModule>
+
+# Enable Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+  
+  # Deflate Compression level (1-9, 6 is optimal)
+  DeflateCompressionLevel 6
+</IfModule>
+
+# Browser Caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Default expiration: 2 days
+  ExpiresDefault "access plus 2 days"
+  
+  # HTML
+  ExpiresByType text/html "access plus 1 hour"
+  
+  # CSS and JavaScript
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  
+  # Images
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  
+  # Fonts
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+  
+  # Media
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType video/webm "access plus 1 year"
+  ExpiresByType audio/mpeg "access plus 1 year"
+</IfModule>
+
+# Cache Control Headers
+<IfModule mod_headers.c>
+  # General headers
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # Permissions Policy (modern, replaces Feature-Policy)
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  
+  # Content Security Policy
+  Header set Content-Security-Policy "default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https:; connect-src 'self' https://www.google-analytics.com; frame-ancestors 'self'"
+  
+  # Strict Transport Security (HSTS)
+  Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  
+  # Cache control for specific file types
+  <FilesMatch "\.(jpg|jpeg|png|gif|ico|svg|webp)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  
+  <FilesMatch "\.(html|xml|txt|php)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+</IfModule>
+
+# Prevent Directory Listing
+<IfModule mod_autoindex.c>
+  Options -Indexes
+</IfModule>
+
+# Block Access to Sensitive Files
+<FilesMatch "(\.env|\.env\.local|\.git|\.gitignore|\.htaccess|\.htpasswd|web\.config|\.DS_Store)$">
+  Deny from all
+</FilesMatch>
+
+# Allow Access to Essential Files
+<FilesMatch "\.(txt|xml|json|webmanifest)$">
+  Allow from all
+</FilesMatch>
+
+# Prevent Hotlinking
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTP_REFERER} !^$
+  RewriteCond %{HTTP_REFERER} !^https://(www\.)?qiantiannet\.com [NC]
+  RewriteRule \.(jpg|jpeg|png|gif|svg|webp)$ - [NC,F,L]
+</IfModule>
+
+# UTF-8 Encoding
+AddDefaultCharset utf-8
+AddCharset UTF-8 .html .css .js .xml .json .txt
+
+# MIME Types
+AddType application/javascript .js
+AddType application/json .json
+AddType image/svg+xml .svg
+AddType application/manifest+json .webmanifest
+AddType application/xml .xml
+AddType text/plain .txt
+
+# Error Pages (optional - customize as needed)
+# ErrorDocument 404 /404.html
+# ErrorDocument 403 /403.html
+# ErrorDocument 500 /500.html
+
+# Disable PHP Execution in Specific Directories
+<IfModule mod_php.c>
+  # Prevent PHP execution in uploads (if used)
+  # <Directory "/var/www/uploads">
+  #   php_flag engine off
+  # </Directory>
+</IfModule>
+
+# Protection against XXE and XML Attacks
+<IfModule mod_php.c>
+  php_flag disable_classes "DOMDocument"
+</IfModule>
+
+# Reduce Server Information
+ServerTokens Prod
+ServerSignature Off
+
+# Prevent SQL Injection
+<IfModule mod_rewrite.c>
+  RewriteCond %{QUERY_STRING} (union|select|insert|update|delete|drop|create|alter|exec|execute|script|javascript|eval).*(.*)$ [NC,OR]
+  RewriteCond %{QUERY_STRING} [<>'""] [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# Allow Access from All Locations
+<IfModule mod_authz_core.c>
+  Require all granted
+</IfModule>

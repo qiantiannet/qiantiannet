@@ -1,0 +1,48 @@
+# Robots.txt for qiantiannet.com
+# Last Updated: January 2024
+
+# Allow all robots
+User-agent: *
+Allow: /
+
+# Specific directives for search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots and scrapers
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://qiantiannet.com/sitemap.xml
+
+# Disallow private or sensitive areas (none currently, but template for future)
+# Disallow: /admin/
+# Disallow: /private/
+# Disallow: /temp/
+
+# Allow access to all public assets
+Allow: /css/
+Allow: /js/
+Allow: /images/
+
+# Crawl delay
+Crawl-delay: 1
+Request-rate: 30/60
+
+# Contact information
+# For crawl issues, contact: support@qiantiannet.com
